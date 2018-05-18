@@ -1,0 +1,41 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 27
+    defaultConfig {
+        applicationId "com.esri.arcgisruntime.arvrdemos.arvrinthearcgisruntimesdkforandroid"
+        minSdkVersion 18
+        targetSdkVersion 27
+        versionCode 1
+        versionName '0.5'
+        ndk {
+            /*
+             * Sceneform is available for the following ABIs: armeabi-v7a, arm64-v8a, armv7a,
+             * x86_64 and x86. This app enables x86 to run on the emulator.
+             */
+            abiFilters 'armeabi-v7a', 'x86'
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    productFlavors {
+    }
+}
+
+dependencies {
+    //    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.0'
+    implementation 'com.esri.arcgisruntime:arcgis-android:100.2.1-arbeta2'
+    implementation 'com.google.ar.sceneform:core:1.0.0'
+    implementation 'com.google.ar.sceneform.ux:sceneform-ux:1.0.0'
+}
+apply plugin: 'com.google.ar.sceneform.plugin'

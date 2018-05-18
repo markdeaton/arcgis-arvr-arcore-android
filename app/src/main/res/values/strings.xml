@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">AR VR in the ArcGIS Runtime SDK for Android</string>
+    <string name="url_scene_sd" translatable="false">https://tiles.arcgis.com/tiles/Imiq6naek6ZWdour/arcgis/rest/services/San_Diego_Textured_Buildings/SceneServer/layers/0</string>
+</resources>
