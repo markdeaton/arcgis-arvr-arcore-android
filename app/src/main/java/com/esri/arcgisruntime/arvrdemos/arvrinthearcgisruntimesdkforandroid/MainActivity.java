@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import com.esri.arcgisruntime.arvrdemos.arvrinthearcgisruntimesdkforandroid.util.ARUtils;
 import com.esri.arcgisruntime.layers.ArcGISSceneLayer;
@@ -24,13 +25,19 @@ import com.google.ar.core.Session;
 import com.google.ar.core.exceptions.CameraNotAvailableException;
 import com.google.ar.core.exceptions.UnavailableException;
 import com.google.ar.sceneform.ArSceneView;
+import com.google.ar.sceneform.FrameTime;
+import com.google.ar.sceneform.Scene;
+import com.google.ar.sceneform.math.Quaternion;
+import com.google.ar.sceneform.math.Vector3;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SceneUpdateCallable {
 
   private boolean isVR = false;
 
   private SceneView mSceneView;
   private ArSceneView mArSceneView;
+
+  private TextView txtPose;
 
 //  private android.hardware.Camera mCamera;
   private static final int PERMISSION_TO_USE_CAMERA = 0;
@@ -42,16 +49,14 @@ public class MainActivity extends AppCompatActivity {
 
     mSceneView = findViewById(R.id.scene_view);
 
-    if (isVR)
-    {
+    if (isVR) {
       setUpVRScene();
-    }
-    else
-    {
+    } else {
       // Request camera permissions...
       checkForCameraPermissions();
     }
 
+    txtPose = findViewById(R.id.txtPose);
   }
 
   //Setup the Scene in Virtual Reality
@@ -97,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
 
         fpcController.setTranslationFactor(500);
 
-    ARCoreSource motionSource = new ARCoreSource(mArSceneView, cameraSanDiego);
+    ARCoreSource motionSource = new ARCoreSource(mArSceneView, cameraSanDiego, this);
     fpcController.setDeviceMotionDataSource(motionSource);
 
     fpcController.setFramerate(FirstPersonCameraController.FirstPersonFramerate.BALANCED);
@@ -211,5 +216,13 @@ public class MainActivity extends AppCompatActivity {
         return;
       }
     }
+  }
+
+  @Override
+  public void onSceneUpdate(Scene scene, FrameTime frameTime) {
+    Vector3 pos = scene.getCamera().getWorldPosition();
+    Quaternion rot = scene.getCamera().getWorldRotation();
+    String sPose = getString(R.string.pose, pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, rot.w);
+    txtPose.setText(sPose);
   }
 }

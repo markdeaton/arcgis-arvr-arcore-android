@@ -4,6 +4,7 @@ import android.support.annotation.Nullable;
 
 import com.esri.arcgisruntime.arvrdemos.arvrinthearcgisruntimesdkforandroid.util.ARUtils;
 import com.esri.arcgisruntime.mapping.view.DeviceMotionDataSource;
+import com.google.ar.core.TrackingState;
 import com.google.ar.core.exceptions.CameraNotAvailableException;
 import com.google.ar.sceneform.ArSceneView;
 import com.google.ar.sceneform.FrameTime;
@@ -15,20 +16,25 @@ public class ARCoreSource extends DeviceMotionDataSource {
   private static final String TAG = "ARCoreSource";
 
   private ArSceneView mArSceneView;
-//  private Quaternion mOrientationCorrection;
+  private SceneUpdateCallable mSceneUpdateCallback;
 
   /**
    *
    * @param arSceneView Android ArCore ArSceneView widget already inflated.
    * @param camStart Initial geographic position of the viewer
    */
-  ARCoreSource(ArSceneView arSceneView, @Nullable com.esri.arcgisruntime.mapping.view.Camera camStart) {
+  ARCoreSource(
+          ArSceneView arSceneView,
+          @Nullable com.esri.arcgisruntime.mapping.view.Camera camStart,
+          @Nullable SceneUpdateCallable sceneUpdateCallback) {
     this.mArSceneView = arSceneView;
     if (camStart != null) moveInitialPosition(
         camStart.getLocation().getX(),
         camStart.getLocation().getY(),
         camStart.getLocation().getZ());
 //    calcOrientationCorrection();
+
+    this.mSceneUpdateCallback = sceneUpdateCallback;
   }
 
 
@@ -43,15 +49,20 @@ public class ARCoreSource extends DeviceMotionDataSource {
         mArSceneView.getScene().setOnUpdateListener(new Scene.OnUpdateListener() {
           @Override
           public void onUpdate(FrameTime frameTime) {
-//            if (mArSceneView.getArFrame().getCamera().getTrackingState() != TrackingState.TRACKING) return;
+            if (mArSceneView.getArFrame().getCamera().getTrackingState() != TrackingState.TRACKING) return;
 
             Vector3 v3Pos = mArSceneView.getScene().getCamera().getWorldPosition();
-
             Quaternion qRotRaw = mArSceneView.getScene().getCamera().getWorldRotation();
+            // Order of multiplier and multiplicand is very important here!
             Quaternion qRot = Quaternion.multiply(qCompensation, qRotRaw);
-            setRelativePosition(v3Pos.x, v3Pos.y, v3Pos.z,
+
+            setRelativePosition(v3Pos.x, -v3Pos.z, v3Pos.y,
                 qRot.x, qRot.y, qRot.z, qRot.w, true
             );
+
+            // Allow the caller to do something with the updated scene if it wants to
+            if (mSceneUpdateCallback != null)
+              mSceneUpdateCallback.onSceneUpdate(mArSceneView.getScene(), frameTime);
           }
         });
       } catch (CameraNotAvailableException e) {
