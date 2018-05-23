@@ -37,14 +37,14 @@ public class ARCoreSource extends DeviceMotionDataSource {
     this.mSceneUpdateCallback = sceneUpdateCallback;
   }
 
-
+  private final static Quaternion ROTATION_COMPENSATION =
+          new Quaternion((float)Math.sin(45 / (180 / Math.PI)), 0, 0, (float)Math.cos(45 / (180 / Math.PI)));
   @Override
   public void startAll() {
     if (mArSceneView.getSession() != null) {
       try {
         // Compensate for user holding device upright, rather than flat on a horizontal surface.
         // Taken from Xamarin iOS ARKit motion data source code.
-        final Quaternion qCompensation = new Quaternion((float)Math.sin(45 / (180 / Math.PI)), 0, 0, (float)Math.cos(45 / (180 / Math.PI)));
         mArSceneView.getSession().resume();
         mArSceneView.getScene().setOnUpdateListener(new Scene.OnUpdateListener() {
           @Override
@@ -54,7 +54,7 @@ public class ARCoreSource extends DeviceMotionDataSource {
             Vector3 v3Pos = mArSceneView.getScene().getCamera().getWorldPosition();
             Quaternion qRotRaw = mArSceneView.getScene().getCamera().getWorldRotation();
             // Order of multiplier and multiplicand is very important here!
-            Quaternion qRot = Quaternion.multiply(qCompensation, qRotRaw);
+            Quaternion qRot = Quaternion.multiply(ROTATION_COMPENSATION, qRotRaw);
 
             setRelativePosition(v3Pos.x, -v3Pos.z, v3Pos.y,
                 qRot.x, qRot.y, qRot.z, qRot.w, true

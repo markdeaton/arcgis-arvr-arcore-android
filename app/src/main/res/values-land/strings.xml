@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pose">pos: x:%f, y:%f, z:%f | rot: x:%f, y:%f, z:%f, w:%f</string>
+</resources>
