@@ -21,6 +21,7 @@ import com.esri.arcgisruntime.mapping.view.FirstPersonCameraController;
 import com.esri.arcgisruntime.mapping.view.PhoneMotionDataSource;
 import com.esri.arcgisruntime.mapping.view.SceneView;
 import com.esri.arcgisruntime.mapping.view.SideBySideBarrelDistortionStereoRendering;
+import com.google.ar.core.Frame;
 import com.google.ar.core.Session;
 import com.google.ar.core.exceptions.CameraNotAvailableException;
 import com.google.ar.core.exceptions.UnavailableException;
@@ -100,15 +101,16 @@ public class MainActivity extends AppCompatActivity implements SceneUpdateCallab
     FirstPersonCameraController fpcController = new FirstPersonCameraController();
     fpcController.setInitialPosition(cameraSanDiego);
 
-        fpcController.setTranslationFactor(500);
+    fpcController.setTranslationFactor(500);
 
-    ARCoreSource motionSource = new ARCoreSource(mArSceneView, cameraSanDiego, this);
+    startArSession();
+
+    ARCoreSource motionSource = new ARCoreSource(mArSceneView.getScene(), mArSceneView.getSession(), cameraSanDiego, this);
     fpcController.setDeviceMotionDataSource(motionSource);
 
     fpcController.setFramerate(FirstPersonCameraController.FirstPersonFramerate.BALANCED);
     mSceneView.setCameraController(fpcController);
 
-    startArSession();
     // To update position and orientation of the camera with device sensors use:
     motionSource.startAll();
   }
@@ -219,7 +221,14 @@ public class MainActivity extends AppCompatActivity implements SceneUpdateCallab
   }
 
   @Override
-  public void onSceneUpdate(Scene scene, FrameTime frameTime) {
+  public void onSceneError(Exception e) {
+    String sErr = "";
+    if (e instanceof CameraNotAvailableException) sErr = "Could not acquire camera";
+    ARUtils.displayError(this, sErr, e);
+  }
+
+  @Override
+  public void onSceneUpdate(Scene scene, Session session, Frame frame, FrameTime frameTime) {
     Vector3 pos = scene.getCamera().getWorldPosition();
     Quaternion rot = scene.getCamera().getWorldRotation();
     String sPose = getString(R.string.pose, pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, rot.w);
