@@ -62,7 +62,7 @@ public class ARCoreSource extends DeviceMotionDataSource {
             } catch (CameraNotAvailableException e) {
               e.printStackTrace();
             }
-            if (frame.getCamera().getTrackingState() != TrackingState.TRACKING) {
+            if (frame != null && frame.getCamera().getTrackingState() != TrackingState.TRACKING) {
               Log.d(TAG, "Not tracking frame");
               return;
             }
