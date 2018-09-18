@@ -4,8 +4,8 @@
     <com.esri.arcgisruntime.mapping.view.SceneView
         android:id="@+id/scene_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
-    </com.esri.arcgisruntime.mapping.view.SceneView>
+        android:layout_height="match_parent"
+        />
 
     <FrameLayout
         android:id="@+id/camera_preview"

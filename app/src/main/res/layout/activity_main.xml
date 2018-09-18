@@ -19,15 +19,30 @@
         <include layout="@layout/surface_views" />
     </FrameLayout>
 
+    <ToggleButton
+        android:id="@+id/btnHideScene"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checked="true"
+        android:text="Hide Scene"
+        android:textOff="Show Scene"
+        android:textOn="Hide Scene"
+        android:visibility="visible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <TextView
         android:id="@+id/txtPose"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        android:textColor="#FFFFFF"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:background="#88888888"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        android:gravity="center_horizontal|center_vertical"
+        android:paddingEnd="8dp"
+        android:paddingStart="8dp"
+        android:textColor="#FFFFFF"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="@id/btnHideScene"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/btnHideScene"
         app:layout_constraintTop_toTopOf="parent" />
 </android.support.constraint.ConstraintLayout>

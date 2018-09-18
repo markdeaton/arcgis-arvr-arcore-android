@@ -3,6 +3,7 @@ package com.esri.arcgisruntime.arvrdemos.arvrinthearcgisruntimesdkforandroid;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.esri.arcgisruntime.arvrdemos.arvrinthearcgisruntimesdkforandroid.util.ARUtils;
 import com.esri.arcgisruntime.mapping.view.DeviceMotionDataSource;
 import com.google.ar.core.Frame;
 import com.google.ar.core.Pose;
@@ -16,7 +17,7 @@ import com.google.ar.sceneform.math.Quaternion;
 public class ARCoreSource extends DeviceMotionDataSource {
   private static final String TAG = "ARCoreSource";
 
-  private final static Quaternion ROTATION_COMPENSATION =
+  private static final Quaternion ROTATION_COMPENSATION =
           new Quaternion((float)Math.sin(45 / (180 / Math.PI)), 0, 0, (float)Math.cos(45 / (180 / Math.PI)));
 
   private Scene mArScene;
@@ -55,34 +56,34 @@ public class ARCoreSource extends DeviceMotionDataSource {
         mArScene.setOnUpdateListener(new Scene.OnUpdateListener() {
           @Override
           public void onUpdate(FrameTime frameTime) {
-//            if (mArSceneView.getArFrame().getCamera().getTrackingState() != TrackingState.TRACKING) return;
-            Frame frame = null;
+            Frame frame;
             try {
               frame = mArSession.update();
+              if (frame == null) return;
+              if (frame.getCamera().getTrackingState() != TrackingState.TRACKING) {
+                Log.d(TAG, "Not tracking frame");
+                return;
+              }
+
+              Pose pose = frame.getCamera().getPose();
+              float[] aryRot = pose.getRotationQuaternion();
+              Quaternion qRotRaw = new Quaternion(aryRot[0], aryRot[1], aryRot[2], aryRot[3]);
+              // Order of multiplier and multiplicand is very important here!
+              Quaternion qRot = Quaternion.multiply(ROTATION_COMPENSATION, qRotRaw);
+              setRelativePosition(pose.tx(), -pose.tz(), pose.ty(),
+                      qRot.x, qRot.y, qRot.z, qRot.w, true
+              );
+
+              // Allow the caller to do something with the updated scene if it wants to
+              if (mSceneUpdateCallback != null)
+                mSceneUpdateCallback.onSceneUpdate(mArScene, mArSession, frame, frameTime);
             } catch (CameraNotAvailableException e) {
-              e.printStackTrace();
+              mSceneUpdateCallback.onSceneError(e);
             }
-            if (frame != null && frame.getCamera().getTrackingState() != TrackingState.TRACKING) {
-              Log.d(TAG, "Not tracking frame");
-              return;
-            }
-
-            Pose pose = frame.getCamera().getPose();
-            float[] aryRot = pose.getRotationQuaternion();
-            Quaternion qRotRaw = new Quaternion(aryRot[0], aryRot[1], aryRot[2], aryRot[3]);
-            // Order of multiplier and multiplicand is very important here!
-            Quaternion qRot = Quaternion.multiply(ROTATION_COMPENSATION, qRotRaw);
-            setRelativePosition(pose.tx(), -pose.tz(), pose.ty(),
-                    qRot.x, qRot.y, qRot.z, qRot.w, true
-            );
-
-            // Allow the caller to do something with the updated scene if it wants to
-            if (mSceneUpdateCallback != null)
-              mSceneUpdateCallback.onSceneUpdate(mArScene, mArSession, frame, frameTime);
           }
         });
       } catch (CameraNotAvailableException e) {
-        mSceneUpdateCallback.onSceneError(e);
+        ARUtils.displayError(mArScene.getView().getContext(), "Could not get the camera on resuming AR Session", e);
       }
     }
   }

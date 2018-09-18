@@ -8,8 +8,10 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import com.esri.arcgisruntime.arvrdemos.arvrinthearcgisruntimesdkforandroid.util.ARUtils;
 import com.esri.arcgisruntime.layers.ArcGISSceneLayer;
@@ -28,12 +30,12 @@ import com.google.ar.core.exceptions.UnavailableException;
 import com.google.ar.sceneform.ArSceneView;
 import com.google.ar.sceneform.FrameTime;
 import com.google.ar.sceneform.Scene;
-import com.google.ar.sceneform.math.Quaternion;
-import com.google.ar.sceneform.math.Vector3;
 
 public class MainActivity extends AppCompatActivity implements SceneUpdateCallable {
+  private static final int PERMISSION_TO_USE_CAMERA = 0;
 
   private boolean isVR = false;
+  private float mSceneViewX;
 
   private SceneView mSceneView;
   private ArSceneView mArSceneView;
@@ -41,7 +43,6 @@ public class MainActivity extends AppCompatActivity implements SceneUpdateCallab
   private TextView txtPose;
 
 //  private android.hardware.Camera mCamera;
-  private static final int PERMISSION_TO_USE_CAMERA = 0;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +59,21 @@ public class MainActivity extends AppCompatActivity implements SceneUpdateCallab
     }
 
     txtPose = findViewById(R.id.txtPose);
+
+    ToggleButton btnHideScene = findViewById(R.id.btnHideScene);
+    btnHideScene.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+      @Override
+      public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        if (isChecked) { // Hide scene view
+          mSceneView.setX(mSceneViewX);
+//          btnHideScene.setChecked(true);
+        } else { // Show scene view
+          mSceneViewX = mSceneView.getX();
+          mSceneView.setX(getWindow().getDecorView().getWidth());
+//          btnHideScene.setChecked(false);
+        }
+      }
+    });
   }
 
   //Setup the Scene in Virtual Reality
@@ -229,9 +245,15 @@ public class MainActivity extends AppCompatActivity implements SceneUpdateCallab
 
   @Override
   public void onSceneUpdate(Scene scene, Session session, Frame frame, FrameTime frameTime) {
-    Vector3 pos = scene.getCamera().getWorldPosition();
+/*    Vector3 pos = scene.getCamera().getWorldPosition();
     Quaternion rot = scene.getCamera().getWorldRotation();
-    String sPose = getString(R.string.pose, pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, rot.w);
-    txtPose.setText(sPose);
+    String sPose = getString(R.string.pose, pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, rot.w);*/
+    Camera cam = mSceneView.getCurrentViewpointCamera();
+    txtPose.setText(getString(R.string.pose,
+            cam.getLocation().getX(),
+            cam.getLocation().getY(),
+            cam.getLocation().getZ(),
+            cam.getHeading(),
+            cam.getPitch()));
   }
 }
